@@ -32,8 +32,16 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { em, req }: MyContext) {
+    const userId = (req.session as any).userId;
+    if (!userId) return null;
+    const user = await em.findOne(User, { id: userId });
+    return user;
+  }
+
   @Mutation(() => UserResponse)
-  async register(@Arg("options") options: UsernamePasswordInput, @Ctx() { em }: MyContext): Promise<UserResponse> {
+  async register(@Arg("options") options: UsernamePasswordInput, @Ctx() { em, req }: MyContext): Promise<UserResponse> {
     if (options.username.length < 3) return { errors: [{ field: "username", message: "Username must be greater than 2" }] };
     if (options.password.length < 6) return { errors: [{ field: "username", message: "Password must be greater than 6" }] };
     const existingUser = await em.findOne(User, { username: options.username.toLowerCase() });
@@ -41,6 +49,7 @@ export class UserResolver {
     const hashedPassword = await argon2.hash(options.password);
     const user = em.create(User, { username: options.username, password: hashedPassword });
     await em.persistAndFlush(user);
+    (req.session as any).userId = user.id;
     return { user };
   }
 
