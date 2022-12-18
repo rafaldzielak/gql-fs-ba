@@ -19,16 +19,16 @@ export const Login: React.FC<LoginProps> = ({}) => {
   return (
     <Wrapper variant='small'>
       <Formik
-        initialValues={{ username: "", password: "" }}
+        initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
-          const response = await login({ options: values });
+          const response = await login(values);
           if (response.data?.login.errors) setErrors(toErrorMap(response.data.login.errors));
           else if (response.data?.login.user) router.push("/");
         }}>
         {({ isSubmitting }) => (
           <Form>
             <Box mt='4'>
-              <InputField name='username' placeholder='username' label='Username' />
+              <InputField name='usernameOrEmail' placeholder='username or email' label='UsernameOrEmail' />
             </Box>
             <Box mt='4'>
               <InputField name='password' placeholder='password' label='Password' type='password' />

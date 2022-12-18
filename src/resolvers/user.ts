@@ -10,6 +10,9 @@ class UsernamePasswordInput {
   username: string;
 
   @Field()
+  email: string;
+
+  @Field()
   password: string;
 }
 
@@ -43,22 +46,28 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async register(@Arg("options") options: UsernamePasswordInput, @Ctx() { em, req }: MyContext): Promise<UserResponse> {
-    if (options.username.length < 3) return { errors: [{ field: "username", message: "Username must be greater than 2" }] };
+    if (options.username.length < 3 || options.username.includes("@"))
+      return { errors: [{ field: "username", message: "Username must be greater than 2 and can't contain @ sign" }] };
+    if (!options.email.includes("@")) return { errors: [{ field: "email", message: "Invalid email" }] };
     if (options.password.length < 6) return { errors: [{ field: "password", message: "Password must be greater than 6" }] };
     const existingUser = await em.findOne(User, { username: options.username.toLowerCase() });
     if (existingUser) return { errors: [{ field: "username", message: "Username already taken" }] };
     const hashedPassword = await argon2.hash(options.password);
-    const user = em.create(User, { username: options.username, password: hashedPassword });
+    const user = em.create(User, { username: options.username, password: hashedPassword, email: options.email });
     await em.persistAndFlush(user);
     (req.session as any).userId = user.id;
     return { user };
   }
 
   @Mutation(() => UserResponse)
-  async login(@Arg("options") options: UsernamePasswordInput, @Ctx() { em, req }: MyContext): Promise<UserResponse> {
-    const user = await em.findOne(User, { username: options.username.toLowerCase() });
-    if (!user) return { errors: [{ field: "username", message: "Username doesn't exist" }] };
-    const isValid = await argon2.verify(user.password, options.password);
+  async login(
+    @Arg("usernameOrEmail") usernameOrEmail: string,
+    @Arg("password") password: string,
+    @Ctx() { em, req }: MyContext
+  ): Promise<UserResponse> {
+    const user = await em.findOne(User, usernameOrEmail.includes("@") ? { email: usernameOrEmail } : { username: usernameOrEmail });
+    if (!user) return { errors: [{ field: "usernameOrEmail", message: "Username doesn't exist" }] };
+    const isValid = await argon2.verify(user.password, password);
     if (!isValid) return { errors: [{ field: "password", message: "Incorrect password" }] };
     (req.session as any).userId = user.id;
     return { user };
