@@ -43,7 +43,7 @@ export class UserResolver {
   @Mutation(() => UserResponse)
   async register(@Arg("options") options: UsernamePasswordInput, @Ctx() { em, req }: MyContext): Promise<UserResponse> {
     if (options.username.length < 3) return { errors: [{ field: "username", message: "Username must be greater than 2" }] };
-    if (options.password.length < 6) return { errors: [{ field: "username", message: "Password must be greater than 6" }] };
+    if (options.password.length < 6) return { errors: [{ field: "password", message: "Password must be greater than 6" }] };
     const existingUser = await em.findOne(User, { username: options.username.toLowerCase() });
     if (existingUser) return { errors: [{ field: "username", message: "Username already taken" }] };
     const hashedPassword = await argon2.hash(options.password);
@@ -58,7 +58,7 @@ export class UserResolver {
     const user = await em.findOne(User, { username: options.username.toLowerCase() });
     if (!user) return { errors: [{ field: "username", message: "Username doesn't exist" }] };
     const isValid = await argon2.verify(user.password, options.password);
-    if (!isValid) return { errors: [{ field: "username", message: "Incorrect password" }] };
+    if (!isValid) return { errors: [{ field: "password", message: "Incorrect password" }] };
     (req.session as any).userId = user.id;
     return { user };
   }
