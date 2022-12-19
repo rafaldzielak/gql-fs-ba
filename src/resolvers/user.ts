@@ -38,6 +38,30 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+  @Mutation(() => UserResponse)
+  async changePassword(
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string,
+    @Ctx() { em, req, redis }: MyContext
+  ): Promise<UserResponse> {
+    if (newPassword.length < 6) return { errors: [{ field: "newPassword", message: "Password must be greater than 6" }] };
+    const key = FORGET_PASSWORD_PREFIX + token;
+    const userId = await redis.get(key);
+    if (!userId) return { errors: [{ field: "token", message: "Invalid token" }] };
+
+    const user = await em.findOne(User, { id: parseInt(userId) });
+    if (!user) return { errors: [{ field: "token", message: "No user" }] };
+
+    const hashedPassword = await argon2.hash(newPassword);
+
+    user.password = hashedPassword;
+    em.persistAndFlush(user);
+    (req.session as any).userId = user.id;
+    redis.del(key);
+
+    return { user };
+  }
+
   @Query(() => User, { nullable: true })
   async me(@Ctx() { em, req }: MyContext) {
     const userId = (req.session as any).userId;
