@@ -10,10 +10,10 @@ const Index = () => {
 
   return (
     <>
-      <Navbar></Navbar>
+gi      <Navbar />
       {data && data.posts.map((p) => <div key={p.id}>{p.title}</div>)}
     </>
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default withUrqlClient(createUrqlClient)(Index);
