@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, BaseEntity } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn, BaseEntity, ManyToOne } from "typeorm";
 import { Field, ObjectType } from "type-graphql";
+import { User } from "./User";
 
 @ObjectType() // makes it possible to put into resolver
 @Entity()
@@ -19,4 +20,19 @@ export class Post extends BaseEntity {
   @Field(() => String)
   @Column()
   title!: string;
+
+  @Field()
+  @Column()
+  text!: string;
+
+  @Field()
+  @Column({ type: "int", default: 0 })
+  points!: number;
+
+  @Field()
+  @Column()
+  creatorId: number;
+
+  @ManyToOne(() => User, (user) => user.posts)
+  creator: User;
 }
