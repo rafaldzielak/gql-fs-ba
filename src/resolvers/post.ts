@@ -1,5 +1,19 @@
 import { Post } from "../entities/Post";
-import { Resolver, Query, Arg, Int, Mutation, Ctx, InputType, Field, UseMiddleware, FieldResolver, Root, ObjectType } from "type-graphql";
+import {
+  Resolver,
+  Query,
+  Arg,
+  Int,
+  Mutation,
+  Ctx,
+  InputType,
+  Field,
+  UseMiddleware,
+  FieldResolver,
+  Root,
+  ObjectType,
+  Info,
+} from "type-graphql";
 import { MyContext } from "src/types";
 import { isAuth } from "../middleware/isAuth";
 import { dataSource } from "../";
@@ -32,14 +46,43 @@ export class PostResolver {
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
-    @Arg("cursor", () => String, { nullable: true }) cursor: string | null
+    @Arg("cursor", () => String, { nullable: true }) cursor: string | null,
+    @Info() info: any
   ): Promise<PaginatedPosts> {
     const realLimit = Math.min(50, limit);
     const realLimitPlusOne = realLimit + 1;
-    const qb = dataSource.getRepository(Post).createQueryBuilder("p").orderBy('"createdAt"', "DESC").take(realLimitPlusOne);
-    if (cursor) qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
 
-    const posts = await qb.getMany();
+    const replacements: any[] = [realLimitPlusOne];
+    if (cursor) replacements.push(new Date(parseInt(cursor)));
+
+    const posts = await dataSource.query(
+      `
+      select p.*, 
+      json_build_object(
+        'id', u.id,
+        'username', u.username,
+        'email', u.email,
+        'createdAt', u."createdAt",
+        'updatedAt', u."updatedAt"
+        ) creator
+      from post p
+      inner join public.user u on u.id = p."creatorId"
+      ${cursor ? `where p."createdAt" < $2` : ""}
+      order by p."createdAt" DESC
+      limit $1
+    `,
+      replacements
+    );
+
+    // const qb = dataSource
+    //   .getRepository(Post)
+    //   .createQueryBuilder("p")
+    //   .innerJoinAndSelect("p.creator", "u", 'u.id = p."creatorId"')
+    //   .orderBy('p."createdAt"', "DESC")
+    //   .take(realLimitPlusOne);
+    // if (cursor) qb.where('p."createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
+
+    // const posts = await qb.getMany();
 
     return {
       posts: posts.slice(0, realLimit),
