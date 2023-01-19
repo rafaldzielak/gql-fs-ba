@@ -14,6 +14,7 @@ import cors from "cors";
 import { DataSource } from "typeorm";
 import { Post } from "./entities/Post";
 import { User } from "./entities/User";
+import { Updoot } from "./entities/Updoot";
 
 export const dataSource = new DataSource({
   type: "postgres",
@@ -22,7 +23,7 @@ export const dataSource = new DataSource({
   password: "asdasd",
   logging: true,
   synchronize: true,
-  entities: [Post, User],
+  entities: [Post, User, Updoot],
 });
 
 const main = async () => {
