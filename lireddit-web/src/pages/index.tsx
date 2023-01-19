@@ -24,7 +24,7 @@ const Index = () => {
         {!data && fetching && <div>Loading</div>}
         {data?.posts.posts.map((p) => (
           <Box key={p.id} p={5} shadow='md'>
-            <Heading fontSize='xl'>{p.title}</Heading>
+            <Heading fontSize='xl'>{p.title}</Heading> <Text>Posted by {p.creator.username}</Text>
             <Text>{p.textSnippet}</Text>
           </Box>
         ))}

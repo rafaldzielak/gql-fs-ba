@@ -17,7 +17,6 @@ import {
 import { MyContext } from "src/types";
 import { isAuth } from "../middleware/isAuth";
 import { dataSource } from "../";
-import { Updoot } from "../entities/Updoot";
 
 @InputType()
 class PostInput {
