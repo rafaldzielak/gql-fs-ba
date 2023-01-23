@@ -17,6 +17,7 @@ import {
 import { MyContext } from "src/types";
 import { isAuth } from "../middleware/isAuth";
 import { dataSource } from "../";
+import { Updoot } from "../entities/Updoot";
 
 @InputType()
 class PostInput {
@@ -48,20 +49,28 @@ export class PostResolver {
     const isUpdoot = value !== -1;
     const realValue = isUpdoot ? 1 : -1;
     const userId = (req.session as any).userId;
-    await dataSource.query(
-      `
-    START TRANSACTION;
+    const updoot = await Updoot.findOne({ where: { postId, userId } });
+    if (updoot && updoot.value !== realValue) {
+      await dataSource.transaction(async (tm) => {
+        await tm.query(`
+          update updoot
+          set value = ${realValue}
+          where "postId" = ${postId} and "userId" = ${userId};
+      `);
+      });
+    } else if (!updoot) {
+      await dataSource.transaction(async (tm) => {
+        tm.query(`
+          insert into updoot ("userId", "postId", value)
+          values (${userId},${postId},${realValue});`);
+        await tm.query(`
+          update post
+          set points = points + ${realValue}
+          where id = ${postId};
+        `);
+      });
+    }
 
-    insert into updoot ("userId", "postId", value)
-    values (${userId},${postId},${realValue});
-
-    update post
-    set points = points + ${realValue}
-    where id = ${postId};
-
-    COMMIT;
-    `
-    );
     return true;
   }
 
