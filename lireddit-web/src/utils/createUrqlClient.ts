@@ -1,9 +1,10 @@
 import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
 import { dedupExchange, fetchExchange } from "urql";
-import { LoginMutation, LogoutMutation, MeDocument, MeQuery, RegisterMutation } from "../generated/graphql";
+import { LoginMutation, LogoutMutation, MeDocument, MeQuery, Post, RegisterMutation, VoteMutationVariables } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
 
 import { stringifyVariables } from "@urql/core";
+import { gql } from "graphql-tag";
 
 export type MergeMode = "before" | "after";
 
@@ -63,6 +64,32 @@ export const createUrqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
+          vote: (_result, args, cache, info) => {
+            const { postId, value } = args as VoteMutationVariables;
+            const data = cache.readFragment(
+              gql`
+                fragment _ on Post {
+                  id
+                  points
+                  voteStatus
+                }
+              `,
+              { id: postId }
+            ) as Pick<Post, "id" | "points" | "voteStatus">;
+            if (data) {
+              if (data.voteStatus === value) return;
+              const newPoints = data.points + (data.voteStatus ? 2 : 1) * value;
+              cache.writeFragment(
+                gql`
+                  fragment __ on Post {
+                    points
+                    voteStatus
+                  }
+                `,
+                { id: postId, points: newPoints, voteStatus: value }
+              );
+            }
+          },
           createPost: (_result, args, cache, info) => {
             const allFields = cache.inspectFields("Query");
             const fieldInfos = allFields.filter((info) => info.fieldName === "posts");
