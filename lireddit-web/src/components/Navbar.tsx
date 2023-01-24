@@ -8,8 +8,6 @@ export const Navbar: React.FC = () => {
 
   const [{ fetching: isLoggingOut }, logout] = useLogoutMutation();
 
-  console.log(data);
-
   let body = null;
 
   if (fetching) {
