@@ -28,7 +28,9 @@ const Index = () => {
             <Flex>
               <UpdootSection post={p} />
               <Box>
-                <Heading fontSize='xl'>{p.title}</Heading>
+                <Link href={`/post/${p.id}`}>
+                  <Heading fontSize='xl'>{p.title}</Heading>
+                </Link>
                 <Text>Posted by {p.creator.username}</Text>
                 <Text>{p.textSnippet}</Text>
               </Box>
