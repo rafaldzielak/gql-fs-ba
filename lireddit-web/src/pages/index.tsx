@@ -17,10 +17,6 @@ const Index = () => {
 
   return (
     <Layout>
-      <Flex justifyContent='space-between' alignItems='center'>
-        <Heading>LiReddit</Heading>
-        <Link href='/create-post'>Create post</Link>
-      </Flex>
       <Stack spacing={8}>
         {!data && fetching && <div>Loading</div>}
         {data?.posts.posts.map((p) => (
