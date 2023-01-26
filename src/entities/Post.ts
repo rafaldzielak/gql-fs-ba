@@ -41,6 +41,6 @@ export class Post extends BaseEntity {
   @ManyToOne(() => User, (user) => user.posts)
   creator: User;
 
-  @OneToMany(() => Updoot, (updoot) => updoot.post, { onDelete: "CASCADE" })
+  @OneToMany(() => Updoot, (updoot) => updoot.post)
   updoots: Updoot[];
 }
