@@ -16,6 +16,7 @@ import { Post } from "./entities/Post";
 import { User } from "./entities/User";
 import { Updoot } from "./entities/Updoot";
 import { createUserLoader } from "./utils/createUserLoader";
+import { createUpdootLoader } from "./utils/createUpdootLoader";
 
 export const dataSource = new DataSource({
   type: "postgres",
@@ -59,7 +60,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ req, res, redis, userLoader: createUserLoader() }),
+    context: ({ req, res }): MyContext => ({ req, res, redis, userLoader: createUserLoader(), updootLoader: createUpdootLoader() }),
   });
 
   await apolloServer.start();
