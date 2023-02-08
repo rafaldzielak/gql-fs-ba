@@ -35,6 +35,7 @@ const main = async () => {
 
   const RedisStore = connectRedis(session);
   const redis = new Redis();
+  app.set("trust proxy", 1);
   redis.connect().catch(console.error);
 
   app.use(cors({ credentials: true, origin: ["https://studio.apollographql.com", "http://localhost:3001"] }));

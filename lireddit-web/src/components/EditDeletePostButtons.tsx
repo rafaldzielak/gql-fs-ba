@@ -9,13 +9,13 @@ interface EditDeletePostButtonsProps {
 }
 
 const EditDeletePostButtons: FC<EditDeletePostButtonsProps> = ({ id }) => {
-  const [, deletePost] = useDeletePostMutation();
+  const [deletePost] = useDeletePostMutation();
   return (
     <Box>
       <Link href={`/post/edit/${id}`}>
         <IconButton aria-label='Edit post' icon={<EditIcon />} mr='4' />
       </Link>
-      <IconButton colorScheme='red' aria-label='Delete post' icon={<DeleteIcon />} onClick={() => deletePost({ id })} />
+      <IconButton colorScheme='red' aria-label='Delete post' icon={<DeleteIcon />} onClick={() => deletePost({ variables: { id } })} />
     </Box>
   );
 };

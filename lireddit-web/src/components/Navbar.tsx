@@ -3,17 +3,19 @@ import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
+import { useApolloClient } from "@apollo/client";
 
 export const Navbar: React.FC = () => {
-  const [{ data, fetching }] = useMeQuery();
+  const { data, loading } = useMeQuery();
 
-  const [{ fetching: isLoggingOut }, logout] = useLogoutMutation();
+  const [logout, { loading: isLoggingOut }] = useLogoutMutation();
+  const apolloClient = useApolloClient();
 
   const router = useRouter();
 
   let body = null;
 
-  if (fetching) {
+  if (loading) {
   } else if (!data?.me) {
     body = (
       <Flex alignItems='center'>
@@ -38,7 +40,7 @@ export const Navbar: React.FC = () => {
           variant='link'
           onClick={async () => {
             await logout({});
-            router.reload();
+            await apolloClient.resetStore();
           }}>
           Logout
         </Button>

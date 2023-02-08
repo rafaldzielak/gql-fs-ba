@@ -14,13 +14,13 @@ export const ChangePassword = ({}) => {
   const { token } = router.query;
   const [tokenError, setTokenError] = useState("");
 
-  const [, changePassword] = useChangePasswordMutation();
+  const [changePassword] = useChangePasswordMutation();
   return (
     <Wrapper variant='small'>
       <Formik
         initialValues={{ newPassword: "" }}
         onSubmit={async (values, { setErrors }) => {
-          const response = await changePassword({ ...values, token: token as string });
+          const response = await changePassword({ variables: { ...values, token: token as string } });
           if (response.data?.changePassword.errors) {
             const errorMap = toErrorMap(response.data.changePassword.errors);
             if ("token" in errorMap) setTokenError(errorMap.token);
@@ -43,4 +43,4 @@ export const ChangePassword = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient)(ChangePassword);
+export default ChangePassword;

@@ -1,19 +1,17 @@
 import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
-import { withUrqlClient } from "next-urql";
 import Link from "next/link";
 import { useState } from "react";
 import EditDeletePostButtons from "../components/EditDeletePostButtons";
 import { Layout } from "../components/Layout";
 import UpdootSection from "../components/UpdootSection";
 import { useMeQuery, usePostsQuery } from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Index = () => {
   const [variables, setVariables] = useState({ limit: 10, cursor: null as null | string });
-  const [{ data, error, fetching }] = usePostsQuery({ variables });
-  const [{ data: meData }] = useMeQuery();
+  const { data, error, loading } = usePostsQuery({ variables });
+  const { data: meData } = useMeQuery();
 
-  if (!data && !fetching)
+  if (!data && !loading)
     return (
       <div>
         <div>No posts</div>
@@ -24,7 +22,7 @@ const Index = () => {
   return (
     <Layout>
       <Stack spacing={8}>
-        {!data && fetching && <div>Loading</div>}
+        {!data && loading && <div>Loading</div>}
         {data?.posts.posts.map((p) => (
           <Box key={p.id} p={5} shadow='md'>
             <Flex>
@@ -47,7 +45,7 @@ const Index = () => {
         <Flex justifyContent='center'>
           <Button
             onClick={() => setVariables({ limit: variables.limit, cursor: data.posts.posts[data.posts.posts.length - 1].createdAt })}
-            isLoading={fetching}
+            isLoading={loading}
             my={8}>
             Load more
           </Button>
@@ -57,4 +55,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default Index;
