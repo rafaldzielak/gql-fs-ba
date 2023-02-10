@@ -7,8 +7,10 @@ import UpdootSection from "../components/UpdootSection";
 import { useMeQuery, usePostsQuery } from "../generated/graphql";
 
 const Index = () => {
-  const [variables, setVariables] = useState({ limit: 10, cursor: null as null | string });
-  const { data, error, loading } = usePostsQuery({ variables });
+  const { data, error, loading, fetchMore, variables } = usePostsQuery({
+    variables: { limit: 10, cursor: null as null | string },
+    notifyOnNetworkStatusChange: true,
+  });
   const { data: meData } = useMeQuery();
 
   if (!data && !loading)
@@ -44,7 +46,22 @@ const Index = () => {
       {data && data.posts.hasMore && (
         <Flex justifyContent='center'>
           <Button
-            onClick={() => setVariables({ limit: variables.limit, cursor: data.posts.posts[data.posts.posts.length - 1].createdAt })}
+            onClick={() => {
+              fetchMore({
+                variables: { limit: variables?.limit, cursor: data.posts.posts[data.posts.posts.length - 1].createdAt },
+                updateQuery: (previousValue, { fetchMoreResult }) => {
+                  if (!fetchMoreResult) return previousValue;
+                  return {
+                    __typename: "Query",
+                    posts: {
+                      __typename: "PaginatedPosts",
+                      hasMore: fetchMoreResult.posts.hasMore,
+                      posts: [...previousValue.posts.posts, ...fetchMoreResult.posts.posts],
+                    },
+                  };
+                },
+              });
+            }}
             isLoading={loading}
             my={8}>
             Load more
