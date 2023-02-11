@@ -49,17 +49,6 @@ const Index = () => {
             onClick={() => {
               fetchMore({
                 variables: { limit: variables?.limit, cursor: data.posts.posts[data.posts.posts.length - 1].createdAt },
-                updateQuery: (previousValue, { fetchMoreResult }) => {
-                  if (!fetchMoreResult) return previousValue;
-                  return {
-                    __typename: "Query",
-                    posts: {
-                      __typename: "PaginatedPosts",
-                      hasMore: fetchMoreResult.posts.hasMore,
-                      posts: [...previousValue.posts.posts, ...fetchMoreResult.posts.posts],
-                    },
-                  };
-                },
               });
             }}
             isLoading={loading}
