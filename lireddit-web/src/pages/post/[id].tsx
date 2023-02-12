@@ -1,8 +1,10 @@
 import { Box, Heading } from "@chakra-ui/react";
+import { NextPage } from "next";
 import { FC } from "react";
 import EditDeletePostButtons from "../../components/EditDeletePostButtons";
 import { Layout } from "../../components/Layout";
 import { useGetPostFromUrl } from "../../utils/useGetPostFromUrl";
+import { withApollo } from "../../utils/withApollo";
 
 const Post: FC = () => {
   const { data, loading } = useGetPostFromUrl();
@@ -32,4 +34,4 @@ const Post: FC = () => {
   );
 };
 
-export default Post;
+export default withApollo({ ssr: true })(Post as NextPage<unknown, unknown>);

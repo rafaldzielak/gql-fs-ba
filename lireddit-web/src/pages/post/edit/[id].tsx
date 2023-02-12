@@ -1,11 +1,13 @@
 import { Box, Button } from "@chakra-ui/react";
 import { Form, Formik } from "formik";
+import { NextPage } from "next";
 import { useRouter } from "next/router";
 import { InputField } from "../../../components/InputField";
 import { Layout } from "../../../components/Layout";
 import { useUpdatePostMutation } from "../../../generated/graphql";
 import { useGetIntId } from "../../../utils/useGetIntId";
 import { useGetPostFromUrl } from "../../../utils/useGetPostFromUrl";
+import { withApollo } from "../../../utils/withApollo";
 
 const EditPost = () => {
   const [updatePost] = useUpdatePostMutation();
@@ -43,4 +45,4 @@ const EditPost = () => {
   );
 };
 
-export default EditPost;
+export default withApollo({ ssr: false })(EditPost as NextPage<unknown, unknown>);

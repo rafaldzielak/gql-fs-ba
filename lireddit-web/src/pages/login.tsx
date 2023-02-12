@@ -9,6 +9,8 @@ import { useLoginMutation } from "../generated/graphql";
 import { createUrqlClient } from "../utils/createUrqlClient";
 import { toErrorMap } from "../utils/toErrorMap";
 import NextLink from "next/link";
+import { withApollo } from "../utils/withApollo";
+import { NextPage } from "next";
 
 interface LoginProps {}
 
@@ -50,4 +52,4 @@ export const Login: React.FC<LoginProps> = ({}) => {
   );
 };
 
-export default Login;
+export default withApollo({ ssr: false })(Login as NextPage<unknown, unknown>);
