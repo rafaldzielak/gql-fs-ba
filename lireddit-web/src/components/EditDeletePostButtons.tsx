@@ -15,7 +15,19 @@ const EditDeletePostButtons: FC<EditDeletePostButtonsProps> = ({ id }) => {
       <Link href={`/post/edit/${id}`}>
         <IconButton aria-label='Edit post' icon={<EditIcon />} mr='4' />
       </Link>
-      <IconButton colorScheme='red' aria-label='Delete post' icon={<DeleteIcon />} onClick={() => deletePost({ variables: { id } })} />
+      <IconButton
+        colorScheme='red'
+        aria-label='Delete post'
+        icon={<DeleteIcon />}
+        onClick={() =>
+          deletePost({
+            variables: { id },
+            update: (cache) => {
+              cache.evict({ id: "Post:" + id });
+            },
+          })
+        }
+      />
     </Box>
   );
 };
