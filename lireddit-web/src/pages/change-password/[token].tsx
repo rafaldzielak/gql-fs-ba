@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { InputField } from "../../components/InputField";
 import { Wrapper } from "../../components/Wrapper";
-import { useChangePasswordMutation } from "../../generated/graphql";
+import { MeDocument, useChangePasswordMutation } from "../../generated/graphql";
 import { toErrorMap } from "../../utils/toErrorMap";
 import { withApollo } from "../../utils/withApollo";
 
@@ -20,7 +20,19 @@ export const ChangePassword = ({}) => {
       <Formik
         initialValues={{ newPassword: "" }}
         onSubmit={async (values, { setErrors }) => {
-          const response = await changePassword({ variables: { ...values, token: token as string } });
+          const response = await changePassword({
+            variables: { ...values, token: token as string },
+            update: (cache, { data }) => {
+              cache.writeQuery({
+                query: MeDocument,
+                data: {
+                  __typename: "Query",
+                  me: data?.changePassword.user,
+                },
+              });
+              cache.evict({ fieldName: "posts" });
+            },
+          });
           if (response.data?.changePassword.errors) {
             const errorMap = toErrorMap(response.data.changePassword.errors);
             if ("token" in errorMap) setTokenError(errorMap.token);
